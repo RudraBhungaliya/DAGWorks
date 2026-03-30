@@ -1,0 +1,9 @@
+src/services/auth.service.ts(1,1): error TS6133: 'api' is declared but its value is never read.
+src/services/auth.service.ts(2,10): error TS1484: 'UserProfile' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/services/integration.service.ts(1,1): error TS6133: 'api' is declared but its value is never read.
+src/services/integration.service.ts(25,40): error TS6133: 'config' is declared but its value is never read.
+src/services/integration.service.ts(39,31): error TS6133: 'id' is declared but its value is never read.
+src/services/log.service.ts(1,1): error TS6133: 'api' is declared but its value is never read.
+src/services/workflow.service.ts(1,1): error TS6133: 'api' is declared but its value is never read.
+src/services/workflow.service.ts(54,22): error TS6133: 'id' is declared but its value is never read.
+src/services/workflow.service.ts(61,25): error TS6133: 'id' is declared but its value is never read.
