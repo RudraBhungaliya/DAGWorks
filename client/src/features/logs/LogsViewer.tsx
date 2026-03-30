@@ -2,56 +2,10 @@ import { useState } from "react";
 import { Filter, Search, Terminal, AlertTriangle, Info, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const MOCK_LOGS = [
-  {
-    id: "log-1",
-    timestamp: "2026-03-29T22:15:01Z",
-    workflow: "wf-142",
-    node: "Trigger-Jira",
-    level: "info",
-    message: "Received webhook payload from Jira",
-    payload: { issue: "PROJ-123", priority: "critical", assignee: null }
-  },
-  {
-    id: "log-2",
-    timestamp: "2026-03-29T22:15:02Z",
-    workflow: "wf-142",
-    node: "GitHub-Branch",
-    level: "info",
-    message: "Creating branch 'fix/PROJ-123'",
-    payload: { repo: "DAGWorks", base: "main", head: "fix/PROJ-123" }
-  },
-
-  {
-    id: "log-3",
-    timestamp: "2026-03-29T22:15:04Z",
-    workflow: "wf-142",
-    node: "GitHub-Branch",
-    level: "warn",
-    message: "API rate limit approaching. 40 requests remaining.",
-    payload: { limit: 5000, remaining: 40, reset: 1679000000 }
-  },
-  {
-    id: "log-4",
-    timestamp: "2026-03-29T22:15:05Z",
-    workflow: "wf-142",
-    node: "Slack-Notify",
-    level: "error",
-    message: "Failed to send message to #engineering channel",
-    payload: { error: "channel_not_found", retryAttempt: 1 }
-  },
-  {
-    id: "log-5",
-    timestamp: "2026-03-29T22:15:08Z",
-    workflow: "wf-142",
-    node: "Slack-Notify",
-    level: "info",
-    message: "Retry 2/3 successful",
-    payload: { ts: "1678889999.123" }
-  }
-];
+import { useWorkflowStore } from "../../store/workflowStore";
 
 export function LogsViewer() {
+  const { logs, clearLogs } = useWorkflowStore();
   const [filterLevel, setFilterLevel] = useState("all");
   const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
 
@@ -59,7 +13,7 @@ export function LogsViewer() {
     setExpandedLogs(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const filteredLogs = MOCK_LOGS.filter(log => filterLevel === "all" || log.level === filterLevel);
+  const filteredLogs = logs.filter(log => filterLevel === "all" || log.level === filterLevel);
 
   return (
     <div className="flex flex-col h-full bg-background border rounded-lg overflow-hidden shadow-sm">
@@ -97,6 +51,9 @@ export function LogsViewer() {
               Warnings
             </button>
           </div>
+          <Button variant="outline" size="sm" onClick={clearLogs} className="text-muted-foreground hover:text-foreground">
+            Clear Logs
+          </Button>
           <Button variant="outline" size="icon">
             <Filter className="w-4 h-4" />
           </Button>
@@ -112,42 +69,49 @@ export function LogsViewer() {
         </div>
 
         <div className="divide-y divide-white/5">
-          {filteredLogs.map(log => {
-            const isError = log.level === "error";
-            const isWarn = log.level === "warn";
-            const isExpanded = expandedLogs[log.id];
+          {filteredLogs.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-3">
+              <Terminal className="w-8 h-8 opacity-20" />
+              <p>No logs available. Run a workflow to view execution data.</p>
+            </div>
+          ) : (
+            filteredLogs.map(log => {
+              const isError = log.level === "error";
+              const isWarn = log.level === "warn";
+              const isExpanded = expandedLogs[log.id];
 
-            return (
-              <div key={log.id} className={`group hover:bg-[#161b22] transition-colors ${isError ? "bg-red-950/20" : ""}`}>
-                <div
-                  className="grid grid-cols-[180px_100px_140px_auto] gap-4 p-3 items-start cursor-pointer"
-                  onClick={() => toggleExpand(log.id)}
-                >
-                  <div className="text-gray-500 text-xs flex items-center gap-2">
-                    {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                    {new Date(log.timestamp).toLocaleTimeString()}
-                  </div>
-                  <div>
-                    {isError && <span className="flex items-center gap-1.5 text-red-400"><AlertTriangle className="w-3.5 h-3.5" /> ERROR</span>}
-                    {isWarn && <span className="flex items-center gap-1.5 text-yellow-400"><AlertTriangle className="w-3.5 h-3.5" /> WARN</span>}
-                    {log.level === "info" && <span className="flex items-center gap-1.5 text-blue-400"><Info className="w-3.5 h-3.5" /> INFO</span>}
-                  </div>
-                  <div className="text-purple-400 text-xs truncate" title={log.node}>{log.node}</div>
-                  <div className={`text-sm ${isError ? "text-red-300" : isWarn ? "text-yellow-300" : "text-gray-300"}`}>
-                    {log.message}
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div className="pl-[450px] pr-4 pb-4 bg-[#161b22]/50">
-                    <div className="bg-[#010409] border border-white/10 rounded-md p-3 text-xs overflow-x-auto shadow-inner mt-2">
-                      <pre className="text-green-400">{JSON.stringify(log.payload, null, 2)}</pre>
+              return (
+                <div key={log.id} className={`group hover:bg-[#161b22] transition-colors ${isError ? "bg-red-950/20" : ""}`}>
+                  <div
+                    className="grid grid-cols-[180px_100px_140px_auto] gap-4 p-3 items-start cursor-pointer"
+                    onClick={() => toggleExpand(log.id)}
+                  >
+                    <div className="text-gray-500 text-xs flex items-center gap-2">
+                      {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                      {new Date(log.timestamp).toLocaleTimeString()}
+                    </div>
+                    <div>
+                      {isError && <span className="flex items-center gap-1.5 text-red-400"><AlertTriangle className="w-3.5 h-3.5" /> ERROR</span>}
+                      {isWarn && <span className="flex items-center gap-1.5 text-yellow-400"><AlertTriangle className="w-3.5 h-3.5" /> WARN</span>}
+                      {log.level === "info" && <span className="flex items-center gap-1.5 text-blue-400"><Info className="w-3.5 h-3.5" /> INFO</span>}
+                    </div>
+                    <div className="text-purple-400 text-xs truncate" title={log.node}>{log.node}</div>
+                    <div className={`text-sm ${isError ? "text-red-300" : isWarn ? "text-yellow-300" : "text-gray-300"}`}>
+                      {log.message}
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  {isExpanded && (
+                    <div className="pl-[450px] pr-4 pb-4 bg-[#161b22]/50">
+                      <div className="bg-[#010409] border border-white/10 rounded-md p-3 text-xs overflow-x-auto shadow-inner mt-2">
+                        <pre className="text-green-400">{JSON.stringify(log.payload, null, 2)}</pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
