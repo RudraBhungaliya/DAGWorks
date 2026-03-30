@@ -1,21 +1,15 @@
 {
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.3",
-    "tsc-watch": "^7.2.0"
+    "redis": "^5.11.0",
+    "socket.io": "^4.8.3"
   },
-  "name": "server",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "description": ""
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "@types/socket.io": "^3.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  }
 }
