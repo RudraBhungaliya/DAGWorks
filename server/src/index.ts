@@ -1,15 +1,32 @@
 import express from 'express';
 import session from 'express-session';
+import { RedisStore } from "connect-redis";
 import cors from 'cors';
 import dotenv from 'dotenv';
-import workflowRoutes from './routes/workflow';
+
+import { connectDB } from './config/db';
+import { connectRedis, redisClient } from './config/redis';
+
+import authRoutes from './modules/auth/auth.routes';
+import workflowRoutes from './modules/workflow/workflow.routes';
+import integrationRoutes from './modules/integrations/integration.routes';
+import logRoutes from './modules/logs/log.routes';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allow multiple origins or just standard Vite port for dev
+// Connect to DB and Redis
+connectDB();
+connectRedis();
+
+// Initialize store
+const redisStore = new RedisStore({
+  client: redisClient,
+  prefix: "dagworks:",
+});
+
 app.use(cors({
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
   credentials: true
@@ -18,9 +35,10 @@ app.use(cors({
 app.use(express.json());
 
 app.use(session({
+  store: redisStore,
   secret: process.env.SESSION_SECRET || 'super-secret-key-dev',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: { 
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
@@ -28,19 +46,15 @@ app.use(session({
   }
 }));
 
+// Route Middlewares
+app.use('/api/auth', authRoutes);
 app.use('/api/workflows', workflowRoutes);
+app.use('/api/integrations', integrationRoutes);
+app.use('/api/logs', logRoutes);
 
-// General auth endpoint to show session persistence w/o mandatory auth
-app.get('/api/auth/me', (req, res) => {
-  // If we had a real user logged in, we'd return them. Right now, return session ID as pseudo-user
-  res.json({
-    user: {
-      id: req.session.id,
-      email: `guest-${req.session.id.substring(0, 5)}@guest.local`,
-      name: `Guest ${req.session.id.substring(0, 5)}`,
-      role: 'guest'
-    }
-  });
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', nodes: [], edges: [], timestamp: new Date() });
 });
 
 app.listen(PORT, () => {

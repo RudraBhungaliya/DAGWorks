@@ -19,7 +19,7 @@ export const initSocket = (server : any) =>{
     });
 };
 
-export const getID = () => {
+export const getIO = () => {
     if(!io){
         throw new Error("Socket not initialised");
     }
