@@ -19,7 +19,7 @@ export function LoginPage() {
           <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-2 shadow-inner border border-primary/20">
             <GitGraph className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Agentic MCP</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">DAGWorks</h1>
           <p className="text-sm text-muted-foreground mt-1">Sign in to orchestrate your AI workflows.</p>
         </div>
 
@@ -32,7 +32,7 @@ export function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full border rounded-md px-3 py-2.5 text-sm bg-background/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
-                placeholder="admin@mcp.local"
+                placeholder="admin@dagworks.local"
                 required
               />
             </div>

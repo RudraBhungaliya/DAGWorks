@@ -24,7 +24,7 @@ export function Sidebar() {
     <aside className="w-64 border-r bg-card flex flex-col h-full shrink-0">
       <div className="h-16 flex items-center px-6 border-b shrink-0">
         <GitGraph className="w-6 h-6 text-primary mr-2" />
-        <span className="font-semibold text-lg tracking-tight">MCP Gateway</span>
+        <span className="font-semibold text-lg tracking-tight">DAGWorks</span>
       </div>
       
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -55,7 +55,7 @@ export function Sidebar() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-medium">Admin User</span>
-            <span className="text-xs text-muted-foreground">admin@mcp.local</span>
+            <span className="text-xs text-muted-foreground">admin@dagworks.local</span>
           </div>
         </div>
       </div>

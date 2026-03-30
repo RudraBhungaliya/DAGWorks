@@ -60,7 +60,7 @@ export function ApprovalModal({ isOpen, onApprove, onReject }: ApprovalModalProp
                 repo: "DAGWorks/core",
                 base: "main",
                 head: "fix/PROJ-123",
-                commit_message: "Automated fix applied by Agentic MCP"
+                commit_message: "Automated fix applied by DAGWorks"
               }, null, 2)}
             </pre>
           </div>
