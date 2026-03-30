@@ -7,6 +7,8 @@
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.3",
+    "redis": "^5.11.0",
+    "socket.io": "^4.8.3",
     "tsc-watch": "^7.2.0"
   },
   "name": "server",
