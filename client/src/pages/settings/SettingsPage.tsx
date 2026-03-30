@@ -1,12 +1,32 @@
 import { useState } from "react";
-import { Save, User, Bell, Shield, Key } from "lucide-react";
+import { Save, User, Bell, Shield, Key, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "../../store/authStore";
 
 export function SettingsPage() {
   const user = useAuthStore((state) => state.user);
-  const [name, setName] = useState(user?.name || "Admin");
-  const [email, setEmail] = useState(user?.email || "admin@dagworks.local");
+  const updateUser = useAuthStore((state) => state.updateUser);
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleSave = () => {
+    setIsSaving(true);
+    // Simulate network delay
+    setTimeout(() => {
+      updateUser({ name, email });
+      // If we want this to persist across hard reloads, we should update localStorage simulating a backend sync
+      const currentSession = localStorage.getItem('auth-session');
+      if (currentSession) {
+        const session = JSON.parse(currentSession);
+        localStorage.setItem('auth-session', JSON.stringify({ ...session, name, email }));
+      }
+      setIsSaving(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 600);
+  };
 
   return (
     <div className="p-8 max-w-4xl mx-auto h-full flex flex-col gap-8 text-foreground">
@@ -58,9 +78,14 @@ export function SettingsPage() {
           </div>
           
           <div className="p-6 border-t bg-muted/30 flex justify-end">
-            <Button className="gap-2">
-              <Save className="w-4 h-4" />
-              Save Changes
+            <Button className="gap-2" onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+              ) : showSuccess ? (
+                <><Check className="w-4 h-4 text-green-400" /> Saved</>
+              ) : (
+                <><Save className="w-4 h-4" /> Save Changes</>
+              )}
             </Button>
           </div>
         </div>

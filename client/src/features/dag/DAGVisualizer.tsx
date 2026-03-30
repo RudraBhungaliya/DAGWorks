@@ -53,10 +53,34 @@ const initialEdges = [
 ];
 
 export function DAGVisualizer() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes as any);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [showApproval, setShowApproval] = useState(false);
+
+  const handleApprove = () => {
+    setShowApproval(false);
+    // Set to running
+    setNodes((nds) => 
+      nds.map((node) => {
+        if (node.id === '4') {
+          return { ...node, data: { ...node.data, status: 'running', duration: '...' } };
+        }
+        return node;
+      })
+    );
+    // Complete after 2.5s
+    setTimeout(() => {
+      setNodes((nds) => 
+        nds.map((node) => {
+          if (node.id === '4') {
+            return { ...node, data: { ...node.data, status: 'success', duration: '1240ms' } };
+          }
+          return node;
+        })
+      );
+    }, 2500);
+  };
 
   const onConnect = useCallback(
     (params: any) => setEdges((eds) => addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds)),
@@ -93,7 +117,7 @@ export function DAGVisualizer() {
       
       <ApprovalModal 
         isOpen={showApproval} 
-        onApprove={() => setShowApproval(false)} 
+        onApprove={handleApprove} 
         onReject={() => setShowApproval(false)} 
       />
 

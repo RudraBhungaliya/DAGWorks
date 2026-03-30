@@ -5,7 +5,10 @@ import {
   Blocks,
   FileText,
   Settings,
+  LogOut,
 } from "lucide-react";
+import { useAuthStore } from "../../store/authStore";
+import { authService } from "../../services/auth.service";
 
 import { cn } from "@/lib/utils";
 
@@ -19,6 +22,13 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const location = useLocation();
+  const { user, logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await authService.logout();
+    logout();
+    window.location.href = "/login"; // Force full reload to login screen
+  };
 
   return (
     <aside className="w-64 border-r bg-card flex flex-col h-full shrink-0">
@@ -48,16 +58,19 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground font-semibold text-sm">
-            AD
+      <div className="p-4 border-t shrink-0 flex items-center justify-between">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="w-8 h-8 rounded-full bg-accent flex shrink-0 items-center justify-center text-accent-foreground font-semibold text-sm">
+            {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">Admin User</span>
-            <span className="text-xs text-muted-foreground">admin@dagworks.local</span>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-medium truncate">{user?.name || "Guest"}</span>
+            <span className="text-xs text-muted-foreground truncate">{user?.email || "guest@dagworks.local"}</span>
           </div>
         </div>
+        <button onClick={handleLogout} className="p-2 text-muted-foreground hover:text-destructive shrink-0 transition-colors" title="Log out">
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </aside>
   );

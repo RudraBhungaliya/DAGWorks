@@ -30,8 +30,14 @@ function App() {
         const user = await authService.getProfile();
         setAuth(user);
       } catch (error) {
-        // Session invalid or expired
-        console.error("No valid session found during initialization.");
+        // Mandatory login disabled for now - auto setup guest session
+        console.warn("No valid session found. Auto-logging in for development.");
+        setAuth({
+          id: 'u-dev',
+          email: 'guest@dagworks.local',
+          name: 'Guest User',
+          role: 'guest'
+        });
       } finally {
         setIsInitializing(false);
       }

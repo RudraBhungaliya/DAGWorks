@@ -45,6 +45,40 @@ export function WorkflowBuilder() {
     }, 1500);
   };
 
+  const handleApprove = () => {
+    setMessages((prev) => [...prev, { 
+      role: "user", 
+      content: "Looks good, let's approve this." 
+    }, {
+      role: "ai",
+      content: "Great! Your workflow has been approved and saved. It will now execute automatically when triggers are met. You can view its executions in the Dashboard."
+    }]);
+    setGeneratedPlan(null);
+  };
+
+  const handleRegenerate = () => {
+    setIsGenerating(true);
+    setGeneratedPlan(null);
+    setMessages((prev) => [...prev, { role: "user", content: "Can you regenerate that plan differently?" }]);
+    
+    setTimeout(() => {
+      setMessages((prev) => [...prev, { 
+        role: "ai", 
+        content: "Sure, here is an alternative execution plan based on your request. How does this one look?" 
+      }]);
+      setGeneratedPlan({
+        services: ["Jira", "GitHub", "Slack", "Email"],
+        steps: [
+          { id: "1", action: "Trigger", desc: "Listen for Jira bugs", service: "Jira" },
+          { id: "2", action: "Action", desc: "Create a GitHub issue/PR", service: "GitHub" },
+          { id: "3", action: "Action", desc: "Alert #engineering", service: "Slack" },
+          { id: "4", action: "Action", desc: "Email product team", service: "Email" },
+        ]
+      });
+      setIsGenerating(false);
+    }, 1500);
+  };
+
   return (
     <div className="flex flex-col lg:flex-row h-full gap-6">
       {/* Chat Interface */}
@@ -149,14 +183,14 @@ export function WorkflowBuilder() {
               </div>
             </CardContent>
             <div className="p-4 border-t flex flex-col gap-2 bg-muted/10">
-              <Button className="w-full" size="lg">
+              <Button className="w-full" size="lg" onClick={handleApprove}>
                 <Check className="w-4 h-4 mr-2" /> Approve Plan
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" onClick={handleRegenerate} disabled={isGenerating}>
                   <RefreshCw className="w-4 h-4 mr-2" /> Regenerate
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" disabled>
                   Edit Steps
                 </Button>
               </div>
