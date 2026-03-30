@@ -1,4 +1,4 @@
-// import { api } from './api';
+import { api } from './api';
 
 export interface WorkflowSummary {
   id: string;
@@ -27,6 +27,11 @@ export interface WorkflowDetails extends WorkflowSummary {
 }
 
 export const workflowService = {
+  async generateWorkflowPlan(prompt: string): Promise<any> {
+    const response = await api.post('/workflows/generate', { prompt });
+    return response.data.plan;
+  },
+
   async getWorkflows(): Promise<WorkflowSummary[]> {
     // const response = await api.get<WorkflowSummary[]>('/workflows');
     // return response.data;

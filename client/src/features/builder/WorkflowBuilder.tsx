@@ -3,6 +3,8 @@ import { Send, Bot, User, Check, RefreshCw, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { useWorkflowStore } from "../../store/workflowStore";
+import { workflowService } from "../../services/workflow.service";
 
 export function WorkflowBuilder() {
   const [prompt, setPrompt] = useState("");
@@ -11,6 +13,7 @@ export function WorkflowBuilder() {
   ]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<any | null>(null);
+  const setActivePlan = useWorkflowStore((state) => state.setActivePlan);
   
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -18,7 +21,7 @@ export function WorkflowBuilder() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isGenerating]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!prompt.trim()) return;
     
     const userPrompt = prompt.trim();
@@ -26,57 +29,57 @@ export function WorkflowBuilder() {
     setPrompt("");
     setIsGenerating(true);
 
-    // Mock AI response
-    setTimeout(() => {
+    try {
+      const plan = await workflowService.generateWorkflowPlan(userPrompt);
       setMessages((prev) => [...prev, { 
         role: "ai", 
         content: "I've analyzed your request. Here is the structured plan and identified services. Would you like to approve this plan or regenerate?" 
       }]);
-      setGeneratedPlan({
-        services: ["Jira", "GitHub", "Slack", "Google Sheets"],
-        steps: [
-          { id: "1", action: "Trigger", desc: "Listen for critical Jira issues", service: "Jira" },
-          { id: "2", action: "Action", desc: "Create a new branch for the issue", service: "GitHub" },
-          { id: "3", action: "Action", desc: "Send notification to #engineering", service: "Slack" },
-          { id: "4", action: "Action", desc: "Log incident in Tracker", service: "Google Sheets" },
-        ]
-      });
+      setGeneratedPlan(plan);
+    } catch (error) {
+      setMessages((prev) => [...prev, { 
+        role: "ai", 
+        content: "Sorry, I ran into an error generating the plan." 
+      }]);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   const handleApprove = () => {
+    setActivePlan(generatedPlan);
     setMessages((prev) => [...prev, { 
       role: "user", 
       content: "Looks good, let's approve this." 
     }, {
       role: "ai",
-      content: "Great! Your workflow has been approved and saved. It will now execute automatically when triggers are met. You can view its executions in the Dashboard."
+      content: "Great! Your workflow has been approved and saved. It is now the active workspace workflow and you can view its execution graph in the Dashboard."
     }]);
     setGeneratedPlan(null);
   };
 
-  const handleRegenerate = () => {
+  const handleRegenerate = async () => {
     setIsGenerating(true);
     setGeneratedPlan(null);
     setMessages((prev) => [...prev, { role: "user", content: "Can you regenerate that plan differently?" }]);
     
-    setTimeout(() => {
+    const lastUserMsg = messages.filter(m => m.role === "user").pop()?.content || "Generate a workflow";
+
+    try {
+      const plan = await workflowService.generateWorkflowPlan(lastUserMsg + " (alternative)");
       setMessages((prev) => [...prev, { 
         role: "ai", 
         content: "Sure, here is an alternative execution plan based on your request. How does this one look?" 
       }]);
-      setGeneratedPlan({
-        services: ["Jira", "GitHub", "Slack", "Email"],
-        steps: [
-          { id: "1", action: "Trigger", desc: "Listen for Jira bugs", service: "Jira" },
-          { id: "2", action: "Action", desc: "Create a GitHub issue/PR", service: "GitHub" },
-          { id: "3", action: "Action", desc: "Alert #engineering", service: "Slack" },
-          { id: "4", action: "Action", desc: "Email product team", service: "Email" },
-        ]
-      });
+      setGeneratedPlan(plan);
+    } catch (error) {
+      setMessages((prev) => [...prev, { 
+        role: "ai", 
+        content: "Sorry, I ran into an error." 
+      }]);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   return (

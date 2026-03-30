@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -13,6 +13,7 @@ import { CustomNode } from './CustomNode';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ApprovalModal } from '../dashboard/ApprovalModal';
+import { useWorkflowStore } from "../../store/workflowStore";
 
 const nodeTypes = {
   custom: CustomNode,
@@ -53,33 +54,76 @@ const initialEdges = [
 ];
 
 export function DAGVisualizer() {
+  const { activePlan, addLog, setExecutionState } = useWorkflowStore();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [showApproval, setShowApproval] = useState(false);
 
-  const handleApprove = () => {
+  useEffect(() => {
+    if (activePlan?.steps?.length) {
+      const generatedNodes = activePlan.steps.map((step: any, index: number) => ({
+        id: step.id,
+        type: 'custom',
+        position: { x: 50 + index * 280, y: 150 + (index % 2 === 0 ? 0 : 80) },
+        data: { label: step.desc, service: step.service, status: 'pending' }
+      }));
+      setNodes(generatedNodes);
+
+      const generatedEdges = [];
+      for (let i = 0; i < activePlan.steps.length - 1; i++) {
+        generatedEdges.push({
+          id: `e${activePlan.steps[i].id}-${activePlan.steps[i+1].id}`,
+          source: activePlan.steps[i].id,
+          target: activePlan.steps[i+1].id,
+          animated: true,
+          style: { stroke: '#3b82f6', strokeWidth: 2 }
+        });
+      }
+      setEdges(generatedEdges);
+    } else {
+      setNodes(initialNodes as any);
+      setEdges(initialEdges);
+    }
+  }, [activePlan, setNodes, setEdges]);
+
+  const handleApprove = async () => {
     setShowApproval(false);
-    // Set to running
-    setNodes((nds) => 
-      nds.map((node) => {
-        if (node.id === '4') {
-          return { ...node, data: { ...node.data, status: 'running', duration: '...' } };
-        }
-        return node;
-      })
-    );
-    // Complete after 2.5s
-    setTimeout(() => {
-      setNodes((nds) => 
-        nds.map((node) => {
-          if (node.id === '4') {
-            return { ...node, data: { ...node.data, status: 'success', duration: '1240ms' } };
-          }
-          return node;
-        })
-      );
-    }, 2500);
+    
+    const stepsToRun = activePlan?.steps || initialNodes;
+    setExecutionState('running');
+    
+    for (let i = 0; i < stepsToRun.length; i++) {
+      const step = stepsToRun[i] as any;
+      const nodeId = step.id;
+      const service = step.service || step.data?.service;
+      const label = step.desc || step.data?.label || 'Step';
+      
+      setNodes((nds) => nds.map((n) => n.id === nodeId ? { ...n, data: { ...n.data, status: 'running', duration: '...' } } : n));
+      
+      addLog({
+        workflow: activePlan ? "nlp-workflow" : "demo-workflow",
+        node: service,
+        level: "info",
+        message: `Executing action: '${label}'...`,
+        payload: { status: 'running', nodeId }
+      });
+      
+      // Simulate network wait
+      await new Promise(r => setTimeout(r, 1200));
+      
+      const mockDuration = `${Math.floor(Math.random() * 500 + 100)}ms`;
+      setNodes((nds) => nds.map((n) => n.id === nodeId ? { ...n, data: { ...n.data, status: 'success', duration: mockDuration } } : n));
+      
+      addLog({
+        workflow: activePlan ? "nlp-workflow" : "demo-workflow",
+        node: service,
+        level: "info",
+        message: `Successfully completed action: '${label}'`,
+        payload: { status: 'success', duration: mockDuration, timestamp: new Date().toISOString() }
+      });
+    }
+    setExecutionState('completed');
   };
 
   const onConnect = useCallback(
