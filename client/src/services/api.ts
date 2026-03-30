@@ -6,23 +6,11 @@ const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const api = axios.create({
   baseURL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
-// Intercept requests to attach the auth token
-api.interceptors.request.use(
-  (config) => {
-    // We are getting token from the store (bypassing react reactivity)
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Intercept responses for global error handling (like 401 unauth)
 api.interceptors.response.use(

@@ -19,7 +19,7 @@ export function LoginPage() {
     setError(null);
     try {
       const response = await authService.login({ email, password });
-      setAuth(response.token, response.user);
+      setAuth(response.user);
       navigate("/");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Failed to log in. Please try again.");

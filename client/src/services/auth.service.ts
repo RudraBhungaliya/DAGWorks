@@ -7,7 +7,6 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
   user: UserProfile;
 }
 
@@ -23,7 +22,6 @@ export const authService = {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          token: 'mock-jwt-token-xyz123',
           user: {
             id: 'u-1',
             email: credentials.email,
