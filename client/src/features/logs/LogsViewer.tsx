@@ -21,6 +21,7 @@ const MOCK_LOGS = [
     message: "Creating branch 'fix/PROJ-123'",
     payload: { repo: "DAGWorks", base: "main", head: "fix/PROJ-123" }
   },
+
   {
     id: "log-3",
     timestamp: "2026-03-29T22:15:04Z",
@@ -70,26 +71,26 @@ export function LogsViewer() {
         <div className="flex items-center gap-2">
           <div className="flex items-center text-muted-foreground bg-muted rounded-md px-3 py-1.5 w-64 border">
             <Search className="w-4 h-4 mr-2" />
-            <input 
-              type="text" 
-              placeholder="Filter by node or workflow..." 
+            <input
+              type="text"
+              placeholder="Filter by node or workflow..."
               className="bg-transparent border-none outline-none text-xs w-full text-foreground"
             />
           </div>
           <div className="flex bg-muted p-1 rounded-md border text-xs">
-            <button 
+            <button
               className={`px-3 py-1 rounded-sm ${filterLevel === "all" ? "bg-background shadow-sm font-medium" : "text-muted-foreground"}`}
               onClick={() => setFilterLevel("all")}
             >
               All
             </button>
-            <button 
+            <button
               className={`px-3 py-1 rounded-sm ${filterLevel === "error" ? "bg-background shadow-sm font-medium text-destructive" : "text-muted-foreground"}`}
               onClick={() => setFilterLevel("error")}
             >
               Errors
             </button>
-            <button 
+            <button
               className={`px-3 py-1 rounded-sm ${filterLevel === "warn" ? "bg-background shadow-sm font-medium text-yellow-500" : "text-muted-foreground"}`}
               onClick={() => setFilterLevel("warn")}
             >
@@ -109,16 +110,16 @@ export function LogsViewer() {
           <div>Node</div>
           <div>Message</div>
         </div>
-        
+
         <div className="divide-y divide-white/5">
           {filteredLogs.map(log => {
             const isError = log.level === "error";
             const isWarn = log.level === "warn";
             const isExpanded = expandedLogs[log.id];
-            
+
             return (
               <div key={log.id} className={`group hover:bg-[#161b22] transition-colors ${isError ? "bg-red-950/20" : ""}`}>
-                <div 
+                <div
                   className="grid grid-cols-[180px_100px_140px_auto] gap-4 p-3 items-start cursor-pointer"
                   onClick={() => toggleExpand(log.id)}
                 >
@@ -136,7 +137,7 @@ export function LogsViewer() {
                     {log.message}
                   </div>
                 </div>
-                
+
                 {isExpanded && (
                   <div className="pl-[450px] pr-4 pb-4 bg-[#161b22]/50">
                     <div className="bg-[#010409] border border-white/10 rounded-md p-3 text-xs overflow-x-auto shadow-inner mt-2">
